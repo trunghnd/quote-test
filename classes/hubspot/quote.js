@@ -2,24 +2,22 @@ const axios = require('axios')
 const { auth } = require('./auth.js')
 const { LineItem } = require('./lineItem.js')
 const { Contact } = require('./contact.js')
+const { Deal } = require('./deal.js')
 const base = 'https://api.hubapi.com'
 
 let Quote = class {
 
 
     essentialProps = [
-        
-        'hs_payment_enabled',
-        'hs_payment_date',
-        
-    ]
-    extraProps = [
+
         'hs_quote_amount',
         // 'hs_payment_status',
         'hs_quote_number',
         'hs_slug',
 
+
     ]
+
     lineItems = []
     contacts = []
     constructor() {
@@ -29,7 +27,7 @@ let Quote = class {
     async load(id) {
 
         let config = await auth.getConfig()
-        let propList = this.essentialProps.concat(this.extraProps).join(',')
+        let propList = this.essentialProps.join(',')
         let url = base + '/crm/v3/objects/quotes/' + id + '?properties=' + propList
         let res = await axios.get(url, config)
 
@@ -54,7 +52,7 @@ let Quote = class {
         }
 
 
-        //load line items
+        //load line contacts
 
         let urlContacts = base + '/crm/v4/objects/quotes/' + id + '/associations/contacts'
         let resContacts = await axios.get(urlContacts, config)
@@ -64,6 +62,20 @@ let Quote = class {
             let contact = new Contact()
             await contact.load(contactId)
             this.contacts.push(contact)
+        }
+
+        //load line deal
+
+        let urlDeals = base + '/crm/v4/objects/quotes/' + id + '/associations/deals'
+        let resDeals = await axios.get(urlDeals, config)
+        let dataDeals = resDeals.data.results
+        if (dataDeals.length > 0) {
+            let dealId = dataDeals[0]['toObjectId']
+            let deal = new Deal()
+            await deal.load(dealId)
+            this.deal = deal
+        }else{
+            this.deal = false
         }
 
     }

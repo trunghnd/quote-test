@@ -54,12 +54,12 @@ app.post('/stripe-payment-status', express.raw({type: 'application/json'}),async
       let quote = new Quote()
       await quote.load(quoteId)
       console.log(quote)
-      // quote.data.hs_payment_status = 'PAID'
-      quote.data.hs_payment_enabled = true
-      quote.data.hs_payment_date = Date.now()
+      if(quote.deal){
+        quote.deal.data.stripe_payment_status = 'PAID'
+        await quote.deal.save()
+      }
       
-      let result = await quote.save()
-      console.log(result)
+      console.log(quote.deal)
 
       break;
     case 'checkout.session.expired':
