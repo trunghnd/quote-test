@@ -8,10 +8,17 @@ let Quote = class {
 
 
     essentialProps = [
+        
+        'hs_payment_enabled',
+        'hs_payment_date',
+        
+    ]
+    extraProps = [
         'hs_quote_amount',
+        // 'hs_payment_status',
         'hs_quote_number',
-        'hs_unique_creation_key',
-        'hs_slug'
+        'hs_slug',
+
     ]
     lineItems = []
     contacts = []
@@ -19,27 +26,27 @@ let Quote = class {
 
     }
 
-    async load(id) {    
+    async load(id) {
 
         let config = await auth.getConfig()
-        let propList = this.essentialProps.join(',')
-        let url = base + '/crm/v3/objects/quotes/'+id+'?properties='+propList
+        let propList = this.essentialProps.concat(this.extraProps).join(',')
+        let url = base + '/crm/v3/objects/quotes/' + id + '?properties=' + propList
         let res = await axios.get(url, config)
 
         this.data = res.data.properties
-        for(let i = 0; i<this.essentialProps.length ;i++){
+        for (let i = 0; i < this.essentialProps.length; i++) {
             let prop = this.essentialProps[i]
-            if(this.data[prop] == null){ //checking for null or undefined
+            if (this.data[prop] == null) { //checking for null or undefined
                 this.data[prop] = ''
             }
         }
 
         //load line items
 
-        let urlLineItems = base + '/crm/v4/objects/quotes/'+id+'/associations/line_items'
+        let urlLineItems = base + '/crm/v4/objects/quotes/' + id + '/associations/line_items'
         let resLineItems = await axios.get(urlLineItems, config)
         let dataLineItems = resLineItems.data.results
-        for(let i=0; i<dataLineItems.length ;i++){
+        for (let i = 0; i < dataLineItems.length; i++) {
             let lineItemId = dataLineItems[i]['toObjectId']
             let lineItem = new LineItem()
             await lineItem.load(lineItemId)
@@ -47,43 +54,71 @@ let Quote = class {
         }
 
 
-                //load line items
+        //load line items
 
-                let urlContacts = base + '/crm/v4/objects/quotes/'+id+'/associations/contacts'
-                let resContacts = await axios.get(urlContacts, config)
-                let dataContacts = resContacts.data.results
-                for(let i=0; i<dataContacts.length ;i++){
-                    let contactId = dataContacts[i]['toObjectId']
-                    let contact = new Contact()
-                    await contact.load(contactId)
-                    this.contacts.push(contact)
-                }
+        let urlContacts = base + '/crm/v4/objects/quotes/' + id + '/associations/contacts'
+        let resContacts = await axios.get(urlContacts, config)
+        let dataContacts = resContacts.data.results
+        for (let i = 0; i < dataContacts.length; i++) {
+            let contactId = dataContacts[i]['toObjectId']
+            let contact = new Contact()
+            await contact.load(contactId)
+            this.contacts.push(contact)
+        }
 
     }
 
-    async save() {    
+    async save() {
 
         let config = await auth.getConfig()
-  
-        let urlContact = base + '/crm/v3/objects/quotes/'+this.data.hs_object_id
+
+        let urlContact = base + '/crm/v3/objects/quotes/' + this.data.hs_object_id
 
         let props = {}
-        for(let i = 0; i<this.essentialProps.length ;i++){
+        for (let i = 0; i < this.essentialProps.length; i++) {
             let prop = this.essentialProps[i]
             props[prop] = this.data[prop]
         }
 
         // return true
-        let res = axios.patch(urlContact,{"properties": props} ,config)
+        let res = axios.patch(urlContact, { "properties": props }, config)
 
-        return res.then(payload=>{
+        return res.then(payload => {
             console.log(payload.data)
             return true
-        }).catch(err=>{
+        }).catch(err => {
             console.log(err)
             return false
         })
- 
+
+    }
+    static async search(key, value, operator = 'EQ') {
+
+        let config = await auth.getConfig()
+        let url = base + '/crm/v3/objects/quotes/search'
+        let data = {
+            "filterGroups": [
+                {
+                    "filters": [
+                        {
+                            "propertyName": key,
+                            "operator": operator,
+                            "value": value
+                        }]
+                }]
+        }
+        let res = await axios.post(url, data, config)
+        console.log(res.data)
+        if (res.data.total >= 1) {
+            let quoteId = res.data.results[0]['id']
+            let quote = new Quote()
+            await quote.load(quoteId)
+            return quote
+        } else {
+            return false
+        }
+
+
     }
 
 }

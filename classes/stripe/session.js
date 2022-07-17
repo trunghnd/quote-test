@@ -46,7 +46,8 @@ let Session = class {
             line_items: lineItemsStripe,
             mode: mode,
             payment_method_types: ['card','au_becs_debit'],
-            customer_email: order.contacts[0]['data']['email']
+            customer_email: order.contacts[0]['data']['email'],
+            client_reference_id:order.data.hs_object_id
 
         })
 
