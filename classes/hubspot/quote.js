@@ -14,8 +14,7 @@ let Quote = class {
         // 'hs_payment_status',
         'hs_quote_number',
         'hs_slug',
-
-
+        'hs_status',
     ]
 
     lineItems = []

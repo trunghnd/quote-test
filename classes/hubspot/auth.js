@@ -47,11 +47,11 @@ let Auth = class {
 
     async getAccessToken() {
         //check cache
-        let accessToken = this.cache.get('token')
-        if (accessToken == undefined) {
-            //set cache if not there
-            await this.updateAccessToken()
-        }
+        // let accessToken = this.cache.get('token')
+        // if (accessToken == undefined) {
+        //     //set cache if not there
+        //     await this.updateAccessToken()
+        // }
 
         //get from cache
         // return this.cache.get('token')

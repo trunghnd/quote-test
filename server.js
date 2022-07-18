@@ -23,7 +23,7 @@ const app = express()
 
 // This is your Stripe CLI webhook secret for testing your endpoint locally.
 const endpointSecret = "whsec_70ojqhbdnveQhlB6z2HI0jnJsiWplW3g";
-app.post('/stripe-payment-status', express.raw({type: 'application/json'}),async (request, response) => {
+app.post('/stripe-payment-status', express.raw({ type: 'application/json' }), async (request, response) => {
   const sig = request.headers['stripe-signature'];
 
   let event;
@@ -54,11 +54,11 @@ app.post('/stripe-payment-status', express.raw({type: 'application/json'}),async
       let quote = new Quote()
       await quote.load(quoteId)
       console.log(quote)
-      if(quote.deal){
+      if (quote.deal) {
         quote.deal.data.stripe_payment_status = 'PAID'
         await quote.deal.save()
       }
-      
+
       console.log(quote.deal)
 
       break;
@@ -94,6 +94,26 @@ router.get('/testing', (req, res) => {
   res.send('<h1>Testing is working</h1>')
 
 })
+
+router.get('/quote-status/:slug', async (req, res) => {
+
+  let slug = req.params.slug
+  try {
+    let quote = await Quote.search('hs_slug', slug)
+    if (quote.deal) {
+      res.send(quote.deal.data.stripe_payment_status) 
+    } else {
+      res.send(false)
+    }
+
+
+  } catch (error) {
+    console.error(error);
+    res.send(false)
+  }
+
+})
+
 
 router.get('/success', (req, res) => {
 
