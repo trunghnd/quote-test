@@ -14,9 +14,7 @@ let Owner = class {
     //     archived: false
     // }
     constructor() {
-
     }
-
     async loadByUserId(userId) {
         let config = await auth.getConfig()
         let urlOwnerIDs = base + '/crm/v3/owners/' + userId + '?idProperty=userId'
@@ -55,9 +53,6 @@ let Owner = class {
             return resSearch.data.results[0].id
         }
     }
-
-
-
 
 }
 

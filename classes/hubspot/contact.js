@@ -15,7 +15,6 @@ let Contact = class {
     }
 
     async load(id) {    
-
         let config = await auth.getConfig()
         let propList = this.essentialProps.join(',')
         let urlContact = base + '/crm/v3/objects/contacts/'+id+'?properties='+propList
